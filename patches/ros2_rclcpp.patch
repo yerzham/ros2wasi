@@ -1,0 +1,74 @@
+diff --git a/rclcpp/src/rclcpp/signal_handler.cpp b/rclcpp/src/rclcpp/signal_handler.cpp
+index cf26d06d..0590c47c 100644
+--- a/rclcpp/src/rclcpp/signal_handler.cpp
++++ b/rclcpp/src/rclcpp/signal_handler.cpp
+@@ -25,6 +25,8 @@
+ #include <windows.h>
+ #elif defined(__APPLE__)
+ #include <dispatch/dispatch.h>
++#elif defined(__wasi__)
++#include <condition_variable>
+ #else  // posix
+ #include <semaphore.h>
+ #endif
+@@ -298,6 +300,9 @@ SignalHandler::setup_wait_for_signal()
+   }
+ #elif defined(__APPLE__)
+   signal_handler_sem_ = dispatch_semaphore_create(0);
++#elif defined(__wasi__)
++  // WASI: use condition variable, no additional setup needed
++  signal_notified_ = false;
+ #else  // posix
+   if (-1 == sem_init(&signal_handler_sem_, 0, 0)) {
+     throw std::runtime_error(std::string("sem_init() failed: ") + strerror(errno));
+@@ -316,6 +321,8 @@ SignalHandler::teardown_wait_for_signal() noexcept
+   CloseHandle(signal_handler_sem_);
+ #elif defined(__APPLE__)
+   dispatch_release(signal_handler_sem_);
++#elif defined(__wasi__)
++  // WASI: no teardown needed for condition variable
+ #else  // posix
+   if (-1 == sem_destroy(&signal_handler_sem_)) {
+     RCLCPP_ERROR(get_logger(), "invalid semaphore in teardown_wait_for_signal()");
+@@ -355,6 +362,11 @@ SignalHandler::wait_for_signal()
+   }
+ #elif defined(__APPLE__)
+   dispatch_semaphore_wait(signal_handler_sem_, DISPATCH_TIME_FOREVER);
++#elif defined(__wasi__)
++  // WASI: use condition variable
++  std::unique_lock<std::mutex> lock(signal_handler_mutex_);
++  signal_handler_cv_.wait(lock, [this] { return signal_notified_; });
++  signal_notified_ = false;
+ #else  // posix
+   int s;
+   do {
+@@ -376,6 +388,13 @@ SignalHandler::notify_signal_handler() noexcept
+   }
+ #elif defined(__APPLE__)
+   dispatch_semaphore_signal(signal_handler_sem_);
++#elif defined(__wasi__)
++  // WASI: use condition variable
++  {
++    std::lock_guard<std::mutex> lock(signal_handler_mutex_);
++    signal_notified_ = true;
++  }
++  signal_handler_cv_.notify_one();
+ #else  // posix
+   if (-1 == sem_post(&signal_handler_sem_)) {
+     RCLCPP_ERROR(get_logger(), "sem_post failed in notify_signal_handler()");
+diff --git a/rclcpp/src/rclcpp/signal_handler.hpp b/rclcpp/src/rclcpp/signal_handler.hpp
+index db608b0d..99cbbdfd 100644
+--- a/rclcpp/src/rclcpp/signal_handler.hpp
++++ b/rclcpp/src/rclcpp/signal_handler.hpp
+@@ -204,6 +204,11 @@ private:
+   HANDLE signal_handler_sem_;
+ #elif defined(__APPLE__)
+   dispatch_semaphore_t signal_handler_sem_;
++#elif defined(__wasi__)
++  // WASI doesn't support POSIX semaphores, use condition variable instead
++  std::mutex signal_handler_mutex_;
++  std::condition_variable signal_handler_cv_;
++  bool signal_notified_ = false;
+ #else  // posix
+   sem_t signal_handler_sem_;
+ #endif

@@ -1,0 +1,6 @@
+src/**/*
+!src/rmw_wasm_component_cpp/
+!src/rmw_wasm_component_cpp/**/*
+build
+install
+log

@@ -1,0 +1,16 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 36a7cbb..f37f47e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -18,7 +18,10 @@ ament_vendor(libyaml_vendor
+   VCS_URL https://github.com/yaml/libyaml.git
+   VCS_VERSION 0.2.5
+   CMAKE_ARGS
+-    "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}$<$<BOOL:${MSVC}>: /wd4244 /wd4267 /wd4996>"
++    "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} -fPIC$<$<BOOL:${MSVC}>: /wd4244 /wd4267 /wd4996>"
++    "-DBUILD_SHARED_LIBS=OFF"
++    "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
++    "-DCMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}"
+ )
+ 
+ ament_export_dependencies(yaml)

@@ -1,0 +1,59 @@
+diff --git a/src/process.c b/src/process.c
+index d62c329..c0e26d9 100644
+--- a/src/process.c
++++ b/src/process.c
+@@ -34,6 +34,8 @@ extern "C"
+ #pragma warning(disable : 5105)
+ #include <Windows.h>
+ #pragma warning(pop)
++#elif defined(__wasi__)
++#include <unistd.h>
+ #else
+ #include <libgen.h>
+ #include <sys/wait.h>
+@@ -62,6 +64,8 @@ char * rcutils_get_executable_name(rcutils_allocator_t allocator)
+ 
+ #if defined __APPLE__ || defined __FreeBSD__ || (defined __ANDROID__ && __ANDROID_API__ >= 21)
+   const char * appname = getprogname();
++#elif defined(__wasi__)
++  const char * appname = "wasm_module";
+ #elif (defined __GNUC__ && !defined(__MINGW64__)) && !defined(__QNXNTO__) && !defined(__OHOS__)
+   const char * appname = program_invocation_name;
+ #elif defined _WIN32 || defined __CYGWIN__
+@@ -87,7 +91,11 @@ char * rcutils_get_executable_name(rcutils_allocator_t allocator)
+   }
+ 
+   // Get just the executable name (Unix may return the absolute path)
+-#if defined __APPLE__ || defined __FreeBSD__ || (defined __GNUC__ && !defined(__MINGW64__))
++#if defined(__wasi__)
++  // WASI: just copy the name directly
++  memcpy(executable_name, appname, applen);
++  executable_name[applen] = '\0';
++#elif defined __APPLE__ || defined __FreeBSD__ || (defined __GNUC__ && !defined(__MINGW64__))
+   // We need an intermediate copy because basename may modify its arguments
+   char * intermediate = rcutils_strdup(appname, allocator);
+   if (NULL == intermediate) {
+@@ -284,6 +292,11 @@ rcutils_start_process(
+   process->pid = process_info.dwProcessId;
+ 
+   return process;
++#elif defined(__wasi__)
++  // WASI doesn't support process creation
++  RCUTILS_SET_ERROR_MSG("Process creation is not supported in WASI");
++  rcutils_process_close(process);
++  return NULL;
+ #else
+   char **argv = allocator->zero_allocate(args->size + 1, sizeof(*argv), &allocator->state);
+   if (NULL == argv) {
+@@ -350,6 +363,11 @@ rcutils_process_wait(const rcutils_process_t * process, int * exit_code)
+     }
+     *exit_code = status;
+   }
++#elif defined(__wasi__)
++  // WASI doesn't support process waiting
++  (void)exit_code;
++  RCUTILS_SET_ERROR_MSG("Process waiting is not supported in WASI");
++  return RCUTILS_RET_ERROR;
+ #else
+   int status;
+ 

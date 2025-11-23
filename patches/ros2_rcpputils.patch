@@ -1,0 +1,44 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index beb7a8a..812cdb9 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -24,12 +24,18 @@ if(NOT WIN32)
+   add_compile_options(-Wall -Wextra -Wpedantic)
+ endif()
+ 
++if(CMAKE_SYSTEM_NAME STREQUAL "WASI")
++  set(process_impl_cpp "")
++else()
++  set(process_impl_cpp src/process.cpp)
++endif()
++
+ add_library(${PROJECT_NAME}
+   src/asserts.cpp
+   src/env.cpp
+   src/filesystem_helper.cpp
+   src/find_library.cpp
+-  src/process.cpp
++  ${process_impl_cpp}
+   src/shared_library.cpp)
+ target_include_directories(${PROJECT_NAME} PUBLIC
+   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+diff --git a/src/filesystem_helper.cpp b/src/filesystem_helper.cpp
+index 558429d..bce0d21 100644
+--- a/src/filesystem_helper.cpp
++++ b/src/filesystem_helper.cpp
+@@ -319,6 +319,7 @@ path temp_directory_path()
+   return path(temp_path);
+ }
+ 
++#ifndef __wasm__
+ path create_temp_directory(const std::string & base_name, const path & parent_path)
+ {
+   const auto template_path = base_name + "XXXXXX";
+@@ -382,6 +383,7 @@ std::filesystem::path create_temporary_directory(
+   }
+   return path_to_temp_dir;
+ }
++#endif // __wasm__
+ 
+ path current_path()
+ {
