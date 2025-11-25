@@ -3,9 +3,7 @@
 #include "rmw/impl/cpp/macros.hpp"
 #include "rmw/validate_node_name.h"
 #include "rmw/validate_namespace.h"
-
-
-extern const char * wasm_identifier;
+#include "rmw_wasm_component_cpp/rmw_indentifier.hpp"
 
 extern "C" {
 
@@ -20,7 +18,7 @@ rmw_create_node(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     context,
     context->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(name, nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(namespace_, nullptr);
@@ -46,7 +44,7 @@ rmw_create_node(
   }
   
   rmw_node_t * node = new rmw_node_t();
-  node->implementation_identifier = wasm_identifier;
+  node->implementation_identifier = rmw_wasm_component_cpp::identifier;
   node->data = nullptr;
   node->name = name;
   node->namespace_ = namespace_;
@@ -63,7 +61,7 @@ rmw_destroy_node(rmw_node_t * node)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     node,
     node->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   delete node;
@@ -77,7 +75,7 @@ rmw_node_get_graph_guard_condition(const rmw_node_t * node)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     node,
     node->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return nullptr);
   
   return nullptr;

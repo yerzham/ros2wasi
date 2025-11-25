@@ -3,9 +3,7 @@
 #include "rmw/impl/cpp/macros.hpp"
 #include "rmw/dynamic_message_type_support.h"
 #include "rmw/subscription_content_filter_options.h"
-
-
-extern const char * wasm_identifier;
+#include "rmw_wasm_component_cpp/rmw_indentifier.hpp"
 
 extern "C" {
 
@@ -22,7 +20,7 @@ rmw_create_subscription(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     node,
     node->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(type_support, nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(topic_name, nullptr);
@@ -34,7 +32,7 @@ rmw_create_subscription(
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription_options, nullptr);
   
   rmw_subscription_t * subscription = new rmw_subscription_t();
-  subscription->implementation_identifier = wasm_identifier;
+  subscription->implementation_identifier = rmw_wasm_component_cpp::identifier;
   subscription->data = nullptr;
   subscription->topic_name = topic_name;
   subscription->can_loan_messages = false;
@@ -51,12 +49,12 @@ rmw_destroy_subscription(rmw_node_t * node, rmw_subscription_t * subscription)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     node,
     node->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     subscription,
     subscription->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   delete subscription;
@@ -74,7 +72,7 @@ rmw_subscription_count_matched_publishers(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     subscription,
     subscription->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *publisher_count = 0;
@@ -92,7 +90,7 @@ rmw_subscription_get_actual_qos(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     subscription,
     subscription->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *qos = rmw_qos_profile_default;
@@ -114,7 +112,7 @@ rmw_take(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     subscription,
     subscription->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *taken = false;
@@ -138,7 +136,7 @@ rmw_take_with_info(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     subscription,
     subscription->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *taken = false;
@@ -160,7 +158,7 @@ rmw_take_serialized_message(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     subscription,
     subscription->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *taken = false;
@@ -184,7 +182,7 @@ rmw_take_serialized_message_with_info(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     subscription,
     subscription->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *taken = false;

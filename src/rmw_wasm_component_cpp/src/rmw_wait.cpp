@@ -1,9 +1,8 @@
 #include "rmw/rmw.h"
 #include "rmw/error_handling.h"
 #include "rmw/impl/cpp/macros.hpp"
+#include "rmw_wasm_component_cpp/rmw_indentifier.hpp"
 
-
-extern const char * wasm_identifier;
 
 extern "C" {
 
@@ -16,11 +15,11 @@ rmw_create_wait_set(rmw_context_t * context, size_t max_conditions)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     context,
     context->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return nullptr);
   
   rmw_wait_set_t * wait_set = new rmw_wait_set_t();
-  wait_set->implementation_identifier = wasm_identifier;
+  wait_set->implementation_identifier = rmw_wasm_component_cpp::identifier;
   wait_set->data = nullptr;
   
   return wait_set;
@@ -34,7 +33,7 @@ rmw_destroy_wait_set(rmw_wait_set_t * wait_set)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     wait_set,
     wait_set->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   delete wait_set;
@@ -57,7 +56,7 @@ rmw_wait(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     wait_set,
     wait_set->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   // Clear all wait sets

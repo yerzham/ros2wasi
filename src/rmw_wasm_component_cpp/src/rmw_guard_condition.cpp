@@ -1,9 +1,7 @@
 #include "rmw/rmw.h"
 #include "rmw/error_handling.h"
 #include "rmw/impl/cpp/macros.hpp"
-
-
-extern const char * wasm_identifier;
+#include "rmw_wasm_component_cpp/rmw_indentifier.hpp"
 
 extern "C" {
 
@@ -15,11 +13,11 @@ rmw_create_guard_condition(rmw_context_t * context)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     context,
     context->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return nullptr);
   
   rmw_guard_condition_t * guard_condition = new rmw_guard_condition_t();
-  guard_condition->implementation_identifier = wasm_identifier;
+  guard_condition->implementation_identifier = rmw_wasm_component_cpp::identifier;
   guard_condition->data = nullptr;
   guard_condition->context = context;
   
@@ -34,7 +32,7 @@ rmw_destroy_guard_condition(rmw_guard_condition_t * guard_condition)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     guard_condition,
     guard_condition->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   delete guard_condition;
@@ -49,7 +47,7 @@ rmw_trigger_guard_condition(const rmw_guard_condition_t * guard_condition)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     guard_condition,
     guard_condition->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   return RMW_RET_OK;

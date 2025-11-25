@@ -2,9 +2,7 @@
 #include "rmw/error_handling.h"
 #include "rmw/impl/cpp/macros.hpp"
 #include "rmw/qos_profiles.h"
-
-
-extern const char * wasm_identifier;
+#include "rmw_wasm_component_cpp/rmw_indentifier.hpp"
 
 extern "C" {
 

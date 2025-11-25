@@ -3,9 +3,7 @@
 #include "rmw/impl/cpp/macros.hpp"
 #include "rmw/get_network_flow_endpoints.h"
 #include <cstring>
-
-
-extern const char * wasm_identifier;
+#include "rmw_wasm_component_cpp/rmw_indentifier.hpp"
 
 extern "C" {
 
@@ -22,7 +20,7 @@ rmw_create_publisher(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     node,
     node->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(type_support, nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(topic_name, nullptr);
@@ -34,7 +32,7 @@ rmw_create_publisher(
   RMW_CHECK_ARGUMENT_FOR_NULL(publisher_options, nullptr);
   
   rmw_publisher_t * publisher = new rmw_publisher_t();
-  publisher->implementation_identifier = wasm_identifier;
+  publisher->implementation_identifier = rmw_wasm_component_cpp::identifier;
   publisher->data = nullptr;
   publisher->topic_name = topic_name;
   publisher->can_loan_messages = false;
@@ -51,12 +49,12 @@ rmw_destroy_publisher(rmw_node_t * node, rmw_publisher_t * publisher)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     node,
     node->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     publisher,
     publisher->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   delete publisher;
@@ -76,7 +74,7 @@ rmw_publish(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     publisher,
     publisher->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   return RMW_RET_OK;
@@ -95,7 +93,7 @@ rmw_publish_serialized_message(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     publisher,
     publisher->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   return RMW_RET_OK;
@@ -112,7 +110,7 @@ rmw_publisher_count_matched_subscriptions(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     publisher,
     publisher->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *subscription_count = 0;
@@ -127,7 +125,7 @@ rmw_publisher_assert_liveliness(const rmw_publisher_t * publisher)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     publisher,
     publisher->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   return RMW_RET_OK;
@@ -144,7 +142,7 @@ rmw_publisher_wait_for_all_acked(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     publisher,
     publisher->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   return RMW_RET_OK;
@@ -161,7 +159,7 @@ rmw_publisher_get_actual_qos(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     publisher,
     publisher->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *qos = rmw_qos_profile_default;
@@ -246,12 +244,12 @@ rmw_get_gid_for_publisher(const rmw_publisher_t * publisher, rmw_gid_t * gid)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     publisher,
     publisher->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   // Stub implementation - return a dummy GID
   memset(gid->data, 0, RMW_GID_STORAGE_SIZE);
-  gid->implementation_identifier = wasm_identifier;
+  gid->implementation_identifier = rmw_wasm_component_cpp::identifier;
   return RMW_RET_OK;
 }
 
@@ -265,12 +263,12 @@ rmw_compare_gids_equal(const rmw_gid_t * gid1, const rmw_gid_t * gid2, bool * re
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     gid1,
     gid1->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     gid2,
     gid2->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *result = (memcmp(gid1->data, gid2->data, RMW_GID_STORAGE_SIZE) == 0);

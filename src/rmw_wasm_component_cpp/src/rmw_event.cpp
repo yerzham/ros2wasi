@@ -2,9 +2,8 @@
 #include "rmw/error_handling.h"
 #include "rmw/impl/cpp/macros.hpp"
 #include "rmw/event.h"
+#include "rmw_wasm_component_cpp/rmw_indentifier.hpp"
 
-
-extern const char * wasm_identifier;
 
 extern "C" {
 
@@ -20,10 +19,10 @@ rmw_publisher_event_init(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     publisher,
     publisher->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
-  rmw_event->implementation_identifier = wasm_identifier;
+  rmw_event->implementation_identifier = rmw_wasm_component_cpp::identifier;
   rmw_event->data = nullptr;
   rmw_event->event_type = event_type;
   
@@ -42,10 +41,10 @@ rmw_subscription_event_init(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     subscription,
     subscription->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
-  rmw_event->implementation_identifier = wasm_identifier;
+  rmw_event->implementation_identifier = rmw_wasm_component_cpp::identifier;
   rmw_event->data = nullptr;
   rmw_event->event_type = event_type;
   
@@ -65,7 +64,7 @@ rmw_take_event(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     event_handle,
     event_handle->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *taken = false;
@@ -85,7 +84,7 @@ rmw_event_set_callback(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     event,
     event->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   return RMW_RET_OK;

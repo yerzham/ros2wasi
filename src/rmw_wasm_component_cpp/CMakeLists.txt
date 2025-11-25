@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(rmw_wasm_component_cpp)
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
@@ -22,7 +22,6 @@ find_package(rosidl_runtime_cpp REQUIRED)
 find_package(rosidl_typesupport_introspection_c REQUIRED)
 find_package(rosidl_typesupport_introspection_cpp REQUIRED)
 
-
 add_library(${PROJECT_NAME} SHARED
   src/rmw_init.cpp
   src/rmw_node.cpp
@@ -36,6 +35,8 @@ add_library(${PROJECT_NAME} SHARED
   src/rmw_graph.cpp
   src/rmw_qos.cpp
   src/rmw_serialization.cpp
+  src/rmw_indentifier.cpp
+  src/rmw_context.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
@@ -48,6 +49,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
   rosidl_typesupport_introspection_cpp::rosidl_typesupport_introspection_cpp
   rosidl_runtime_c::rosidl_runtime_c
   rosidl_runtime_cpp::rosidl_runtime_cpp
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
 )
 
 configure_rmw_library(${PROJECT_NAME})

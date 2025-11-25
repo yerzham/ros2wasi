@@ -1,9 +1,7 @@
 #include "rmw/rmw.h"
 #include "rmw/error_handling.h"
 #include "rmw/impl/cpp/macros.hpp"
-
-
-extern const char * wasm_identifier;
+#include "rmw_wasm_component_cpp/rmw_indentifier.hpp"
 
 extern "C" {
 
@@ -19,7 +17,7 @@ rmw_create_service(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     node,
     node->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(type_support, nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(service_name, nullptr);
@@ -30,7 +28,7 @@ rmw_create_service(
   RMW_CHECK_ARGUMENT_FOR_NULL(qos_profile, nullptr);
   
   rmw_service_t * service = new rmw_service_t();
-  service->implementation_identifier = wasm_identifier;
+  service->implementation_identifier = rmw_wasm_component_cpp::identifier;
   service->data = nullptr;
   service->service_name = service_name;
   
@@ -46,12 +44,12 @@ rmw_destroy_service(rmw_node_t * node, rmw_service_t * service)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     node,
     node->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     service,
     service->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   delete service;
@@ -73,7 +71,7 @@ rmw_take_request(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     service,
     service->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *taken = false;
@@ -93,7 +91,7 @@ rmw_send_response(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     service,
     service->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   return RMW_RET_OK;
@@ -110,7 +108,7 @@ rmw_service_request_subscription_get_actual_qos(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     service,
     service->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *qos = rmw_qos_profile_default;
@@ -128,7 +126,7 @@ rmw_service_response_publisher_get_actual_qos(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     service,
     service->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *qos = rmw_qos_profile_default;
@@ -148,7 +146,7 @@ rmw_service_set_on_new_request_callback(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     service,
     service->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   return RMW_RET_OK;

@@ -1,9 +1,8 @@
 #include "rmw/rmw.h"
 #include "rmw/error_handling.h"
 #include "rmw/impl/cpp/macros.hpp"
+#include "rmw_wasm_component_cpp/rmw_indentifier.hpp"
 
-
-extern const char * wasm_identifier;
 
 extern "C" {
 
@@ -19,7 +18,7 @@ rmw_create_client(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     node,
     node->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(type_support, nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(service_name, nullptr);
@@ -30,7 +29,7 @@ rmw_create_client(
   RMW_CHECK_ARGUMENT_FOR_NULL(qos_profile, nullptr);
   
   rmw_client_t * client = new rmw_client_t();
-  client->implementation_identifier = wasm_identifier;
+  client->implementation_identifier = rmw_wasm_component_cpp::identifier;
   client->data = nullptr;
   client->service_name = service_name;
   
@@ -46,12 +45,12 @@ rmw_destroy_client(rmw_node_t * node, rmw_client_t * client)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     node,
     node->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     client,
     client->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   delete client;
@@ -71,7 +70,7 @@ rmw_send_request(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     client,
     client->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *sequence_id = 0;
@@ -93,7 +92,7 @@ rmw_take_response(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     client,
     client->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *taken = false;
@@ -111,7 +110,7 @@ rmw_client_request_publisher_get_actual_qos(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     client,
     client->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *qos = rmw_qos_profile_default;
@@ -129,7 +128,7 @@ rmw_client_response_subscription_get_actual_qos(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     client,
     client->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   *qos = rmw_qos_profile_default;
@@ -149,7 +148,7 @@ rmw_client_set_on_new_response_callback(
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     client,
     client->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   return RMW_RET_OK;
@@ -164,12 +163,12 @@ rmw_get_gid_for_client(const rmw_client_t * client, rmw_gid_t * gid)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     client,
     client->implementation_identifier,
-    wasm_identifier,
+    rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   
   // Stub implementation - return a dummy GID
   memset(gid->data, 0, RMW_GID_STORAGE_SIZE);
-  gid->implementation_identifier = wasm_identifier;
+  gid->implementation_identifier = rmw_wasm_component_cpp::identifier;
   return RMW_RET_OK;
 }
 
