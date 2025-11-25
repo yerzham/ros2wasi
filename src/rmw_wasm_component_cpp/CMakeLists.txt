@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(rmw_wasm_component_cpp)
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 20)
+  set(CMAKE_CXX_STANDARD 23)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
@@ -21,8 +21,10 @@ find_package(rosidl_runtime_c REQUIRED)
 find_package(rosidl_runtime_cpp REQUIRED)
 find_package(rosidl_typesupport_introspection_c REQUIRED)
 find_package(rosidl_typesupport_introspection_cpp REQUIRED)
+find_package(ros2_wit REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
+  src/incoming_handler.cpp
   src/rmw_init.cpp
   src/rmw_node.cpp
   src/rmw_publisher.cpp
@@ -41,6 +43,7 @@ add_library(${PROJECT_NAME} SHARED
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
   rmw::rmw
+  ros2_wit::ros2_wit
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE
   rcutils::rcutils

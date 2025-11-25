@@ -1,6 +1,9 @@
 src/**/*
 !src/rmw_wasm_component_cpp/
 !src/rmw_wasm_component_cpp/**/*
+!src/ros2_wit/
+!src/ros2_wit/**/*
 build
 install
 log
+.cache/
