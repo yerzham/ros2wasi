@@ -41,7 +41,6 @@ EOF
 
 colcon build \
     --packages-skip-build-finished \
-    --merge-install \
     --cmake-args \
         -DCMAKE_TOOLCHAIN_FILE="${WASI_SDK}/share/cmake/wasi-sdk-p2.cmake" \
         -DBUILD_TESTING=OFF \
@@ -61,5 +60,6 @@ colcon build \
         -DTRACETOOLS_DISABLED=TRUE \
         -DTRACETOOLS_STATUS_CHECKING_TOOL=OFF \
         -Dyaml_FOUND=FALSE \
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
         -Wno-dev \
     --packages-up-to rclcpp
