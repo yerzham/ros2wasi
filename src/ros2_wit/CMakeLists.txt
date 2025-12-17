@@ -17,7 +17,7 @@ find_package(ament_cmake REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 # Create library target
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} STATIC
   include/ros2_wit/rmw.cpp
   src/incoming_handler_stub.cpp
 )

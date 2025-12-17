@@ -23,7 +23,7 @@ find_package(rosidl_typesupport_introspection_c REQUIRED)
 find_package(rosidl_typesupport_introspection_cpp REQUIRED)
 find_package(ros2_wit REQUIRED)
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} STATIC
   src/incoming_handler.cpp
   src/rmw_init.cpp
   src/rmw_node.cpp
@@ -84,6 +84,7 @@ ament_export_dependencies(
   rosidl_runtime_cpp
   rosidl_typesupport_introspection_c
   rosidl_typesupport_introspection_cpp
+  ros2_wit
 )
 
 if(BUILD_TESTING)

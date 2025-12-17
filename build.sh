@@ -1,18 +1,19 @@
 #!/bin/bash
 
+# Accept package name as first argument, default to rclcpp
+PACKAGE_NAME="${1:-rclcpp}"
+
 debug_mode=0
 build_type=Release
 RMW_IMPLEMENTATION=rmw_wasm_component_cpp
-CMAKE_C_FLAGS="-fwasm-exceptions -mllvm -wasm-use-legacy-eh=false -D_WASI_EMULATED_MMAN -D_WASI_EMULATED_GETPID -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_SIGNAL"
-CMAKE_CXX_FLAGS="-fwasm-exceptions -mllvm -wasm-use-legacy-eh=false -D_WASI_EMULATED_MMAN -D_WASI_EMULATED_GETPID -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_SIGNAL -Wno-c2y-extensions"
+CMAKE_C_FLAGS="-fPIC -fvisibility=default -fwasm-exceptions -mllvm -wasm-use-legacy-eh=false -D_WASI_EMULATED_MMAN -D_WASI_EMULATED_GETPID -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_SIGNAL"
+CMAKE_CXX_FLAGS="-fPIC -fvisibility=default -fwasm-exceptions -mllvm -wasm-use-legacy-eh=false -D_WASI_EMULATED_MMAN -D_WASI_EMULATED_GETPID -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_SIGNAL -Wno-c2y-extensions"
 WASI_SDK=/opt/wasi-sdk
 WASI_SYSROOT="${WASI_SDK}/share/wasi-sysroot/lib/wasm32-wasip2"
-CMAKE_EXE_LINKER_FLAGS="-lc++abi -lunwind -lwasi-emulated-mman -lwasi-emulated-getpid -lwasi-emulated-process-clocks -lwasi-emulated-signal"
-CMAKE_SHARED_LINKER_FLAGS="${WASI_SYSROOT}/libc++abi.a ${WASI_SYSROOT}/libunwind.a ${WASI_SYSROOT}/libwasi-emulated-mman.so ${WASI_SYSROOT}/libwasi-emulated-getpid.so ${WASI_SYSROOT}/libwasi-emulated-process-clocks.so ${WASI_SYSROOT}/libwasi-emulated-signal.so"
+CMAKE_EXE_LINKER_FLAGS="${WASI_SYSROOT}/libc++abi.a ${WASI_SYSROOT}/libunwind.a ${WASI_SYSROOT}/libwasi-emulated-mman.a ${WASI_SYSROOT}/libwasi-emulated-getpid.a ${WASI_SYSROOT}/libwasi-emulated-process-clocks.a ${WASI_SYSROOT}/libwasi-emulated-signal.a"
+CMAKE_SHARED_LINKER_FLAGS="${WASI_SYSROOT}/libc++abi.a ${WASI_SYSROOT}/libunwind.a ${WASI_SYSROOT}/libwasi-emulated-mman.a ${WASI_SYSROOT}/libwasi-emulated-getpid.a ${WASI_SYSROOT}/libwasi-emulated-process-clocks.a ${WASI_SYSROOT}/libwasi-emulated-signal.a"
 
 # Clear host ROS environment variables to prevent finding host packages
-unset ROS_DISTRO
-unset ROS_VERSION
 unset ROS_PYTHON_VERSION
 unset AMENT_PREFIX_PATH
 unset CMAKE_PREFIX_PATH
@@ -44,7 +45,7 @@ colcon build \
     --cmake-args \
         -DCMAKE_TOOLCHAIN_FILE="${WASI_SDK}/share/cmake/wasi-sdk-p2.cmake" \
         -DBUILD_TESTING=OFF \
-        -DBUILD_SHARED_LIBS=ON \
+        -DBUILD_SHARED_LIBS=OFF \
         -DCMAKE_VERBOSE_MAKEFILE=${debug_mode} \
         -DRMW_IMPLEMENTATION=${RMW_IMPLEMENTATION} \
         -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON \
@@ -59,7 +60,6 @@ colcon build \
         -DBENCHMARK_CXX_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
         -DTRACETOOLS_DISABLED=TRUE \
         -DTRACETOOLS_STATUS_CHECKING_TOOL=OFF \
-        -Dyaml_FOUND=FALSE \
         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
         -Wno-dev \
-    --packages-up-to rclcpp
+    --packages-up-to ${PACKAGE_NAME}

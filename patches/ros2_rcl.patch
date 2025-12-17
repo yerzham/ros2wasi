@@ -1,0 +1,17 @@
+diff --git a/rcl/CMakeLists.txt b/rcl/CMakeLists.txt
+index 1234567..abcdefg 100644
+--- a/rcl/CMakeLists.txt
++++ b/rcl/CMakeLists.txt
+@@ -140,6 +140,12 @@ ament_export_targets(${PROJECT_NAME})
+ ament_export_dependencies(rcl_interfaces)
+ # TODO(clalancette): rcl_logging_interface shouldn't be exported, but downstream depends on it for now
+ ament_export_dependencies(rcl_logging_interface)
++# Export the logging implementation so downstream packages can find it
++ament_export_dependencies(rcl_logging_spdlog)
++# Export tracetools so downstream packages can find it (linked as PRIVATE but needed for exports)
++ament_export_dependencies(tracetools)
++# Export libyaml_vendor so downstream packages can find yaml library
++ament_export_dependencies(libyaml_vendor)
+ ament_export_dependencies(rcl_yaml_param_parser)
+ ament_export_dependencies(rcutils)
+ ament_export_dependencies(rmw)

@@ -34,9 +34,9 @@ new file mode 100644
 ++    target_link_libraries(spdlog PRIVATE
 ++        /opt/wasi-sdk/share/wasi-sysroot/lib/wasm32-wasip2/libc++abi.a
 ++        /opt/wasi-sdk/share/wasi-sysroot/lib/wasm32-wasip2/libunwind.a
-++        /opt/wasi-sdk/share/wasi-sysroot/lib/wasm32-wasip2/libwasi-emulated-mman.so
-++        /opt/wasi-sdk/share/wasi-sysroot/lib/wasm32-wasip2/libwasi-emulated-getpid.so
-++        /opt/wasi-sdk/share/wasi-sysroot/lib/wasm32-wasip2/libwasi-emulated-process-clocks.so)
+++        /opt/wasi-sdk/share/wasi-sysroot/lib/wasm32-wasip2/libwasi-emulated-mman.a
+++        /opt/wasi-sdk/share/wasi-sysroot/lib/wasm32-wasip2/libwasi-emulated-getpid.a
+++        /opt/wasi-sdk/share/wasi-sysroot/lib/wasm32-wasip2/libwasi-emulated-process-clocks.a)
 ++endif()
 + spdlog_enable_warnings(spdlog)
 + 
