@@ -4,6 +4,9 @@
 #include "rmw/dynamic_message_type_support.h"
 #include "rmw/subscription_content_filter_options.h"
 #include "rmw_wasm_component_cpp/rmw_indentifier.hpp"
+#include "rmw_wasm_component_cpp/rmw_subscription_data.hpp"
+#include "rcutils/logging_macros.h"
+#include <cstring>
 
 extern "C" {
 
@@ -30,13 +33,23 @@ rmw_create_subscription(
   }
   RMW_CHECK_ARGUMENT_FOR_NULL(qos_profile, nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription_options, nullptr);
-  
+
+  // Create subscription data with message queue
+  auto* sub_data = new rmw_wasm_component_cpp::SubscriptionData();
+  sub_data->topic_name = topic_name;
+
+  // Register in global registry for incoming message routing
+  rmw_wasm_component_cpp::SubscriptionRegistry::instance().register_subscription(
+    topic_name, sub_data);
+
   rmw_subscription_t * subscription = new rmw_subscription_t();
   subscription->implementation_identifier = rmw_wasm_component_cpp::identifier;
-  subscription->data = nullptr;
+  subscription->data = sub_data;
   subscription->topic_name = topic_name;
   subscription->can_loan_messages = false;
-  
+
+  RCUTILS_LOG_DEBUG_NAMED("rmw_wasm", "Created subscription for topic: %s", topic_name);
+
   return subscription;
 }
 
@@ -56,7 +69,14 @@ rmw_destroy_subscription(rmw_node_t * node, rmw_subscription_t * subscription)
     subscription->implementation_identifier,
     rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
-  
+
+  if (subscription->data) {
+    auto* sub_data = static_cast<rmw_wasm_component_cpp::SubscriptionData*>(subscription->data);
+    // Unregister from global registry
+    rmw_wasm_component_cpp::SubscriptionRegistry::instance().unregister_subscription(
+      sub_data->topic_name, sub_data);
+    delete sub_data;
+  }
   delete subscription;
   return RMW_RET_OK;
 }
@@ -160,8 +180,32 @@ rmw_take_serialized_message(
     subscription->implementation_identifier,
     rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
-  
-  *taken = false;
+
+  auto* sub_data = static_cast<rmw_wasm_component_cpp::SubscriptionData*>(subscription->data);
+  if (!sub_data) {
+    *taken = false;
+    return RMW_RET_OK;
+  }
+
+  // Try to get a message from the queue
+  auto msg_data = sub_data->dequeue();
+  if (msg_data.empty()) {
+    *taken = false;
+    return RMW_RET_OK;
+  }
+
+  // Copy data to serialized_message
+  if (serialized_message->buffer_capacity < msg_data.size()) {
+    rmw_ret_t ret = rmw_serialized_message_resize(serialized_message, msg_data.size());
+    if (ret != RMW_RET_OK) {
+      return ret;
+    }
+  }
+  std::memcpy(serialized_message->buffer, msg_data.data(), msg_data.size());
+  serialized_message->buffer_length = msg_data.size();
+
+  *taken = true;
+  RCUTILS_LOG_DEBUG_NAMED("rmw_wasm", "Took message from topic: %s", sub_data->topic_name.c_str());
   return RMW_RET_OK;
 }
 
@@ -184,8 +228,23 @@ rmw_take_serialized_message_with_info(
     subscription->implementation_identifier,
     rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
-  
-  *taken = false;
+
+  // Use the same implementation as rmw_take_serialized_message
+  rmw_ret_t ret = rmw_take_serialized_message(subscription, serialized_message, taken, allocation);
+  if (ret != RMW_RET_OK) {
+    return ret;
+  }
+
+  // Fill in message info with defaults
+  if (*taken) {
+    message_info->source_timestamp = 0;
+    message_info->received_timestamp = 0;
+    message_info->publication_sequence_number = 0;
+    message_info->reception_sequence_number = 0;
+    message_info->from_intra_process = false;
+    std::memset(&message_info->publisher_gid, 0, sizeof(message_info->publisher_gid));
+  }
+
   return RMW_RET_OK;
 }
 

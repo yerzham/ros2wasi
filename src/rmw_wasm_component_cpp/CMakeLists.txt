@@ -19,9 +19,10 @@ find_package(rcutils REQUIRED)
 find_package(rcpputils REQUIRED)
 find_package(rosidl_runtime_c REQUIRED)
 find_package(rosidl_runtime_cpp REQUIRED)
-find_package(rosidl_typesupport_introspection_c REQUIRED)
-find_package(rosidl_typesupport_introspection_cpp REQUIRED)
+find_package(rosidl_typesupport_fastrtps_c REQUIRED)
+find_package(rosidl_typesupport_fastrtps_cpp REQUIRED)
 find_package(ros2_wit REQUIRED)
+find_package(fastcdr REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC
   src/incoming_handler.cpp
@@ -39,6 +40,7 @@ add_library(${PROJECT_NAME} STATIC
   src/rmw_serialization.cpp
   src/rmw_indentifier.cpp
   src/rmw_context.cpp
+  src/type_support.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
@@ -48,10 +50,11 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} PRIVATE
   rcutils::rcutils
   rcpputils::rcpputils
-  rosidl_typesupport_introspection_c::rosidl_typesupport_introspection_c
-  rosidl_typesupport_introspection_cpp::rosidl_typesupport_introspection_cpp
+  rosidl_typesupport_fastrtps_c::rosidl_typesupport_fastrtps_c
+  rosidl_typesupport_fastrtps_cpp::rosidl_typesupport_fastrtps_cpp
   rosidl_runtime_c::rosidl_runtime_c
   rosidl_runtime_cpp::rosidl_runtime_cpp
+  fastcdr
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -62,8 +65,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 configure_rmw_library(${PROJECT_NAME})
 
 register_rmw_implementation(
-  "c:rosidl_typesupport_c:rosidl_typesupport_introspection_c"
-  "cpp:rosidl_typesupport_cpp:rosidl_typesupport_introspection_cpp"
+  "c:rosidl_typesupport_c:rosidl_typesupport_fastrtps_c"
+  "cpp:rosidl_typesupport_cpp:rosidl_typesupport_fastrtps_cpp"
 )
 
 install(
@@ -82,9 +85,10 @@ ament_export_dependencies(
   rcutils
   rosidl_runtime_c
   rosidl_runtime_cpp
-  rosidl_typesupport_introspection_c
-  rosidl_typesupport_introspection_cpp
+  rosidl_typesupport_fastrtps_c
+  rosidl_typesupport_fastrtps_cpp
   ros2_wit
+  fastcdr
 )
 
 if(BUILD_TESTING)

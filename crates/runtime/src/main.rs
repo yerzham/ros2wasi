@@ -46,15 +46,28 @@ impl wasi::messaging::producer::Host for ComponentRunStates {
     fn send(
         &mut self,
         _c: wasmtime::component::Resource<wasi::messaging::producer::Client>,
-        _topic: wasi::messaging::producer::Topic,
-        _message: wasmtime::component::Resource<wasi::messaging::producer::Message>,
+        topic: wasi::messaging::producer::Topic,
+        message: wasmtime::component::Resource<wasi::messaging::producer::Message>,
     ) -> std::result::Result<(), wasi::messaging::producer::Error> {
+        // Get the message data from the resource table
+        let msg = self.resource_table.get(&message).unwrap();
+        let data = &msg.data;
+
+        println!("[RUNTIME] Published message to topic '{}': {} bytes", topic, data.len());
+        println!("[RUNTIME] Message data (hex): {}",
+            data.iter().map(|b| format!("{:02x}", b)).collect::<Vec<_>>().join(" "));
+
         Ok(())
     }
 }
 
 impl wasi::messaging::types::HostMessage for ComponentRunStates {
     fn new(&mut self, data: wasmtime::component::__internal::Vec<u8>) -> Resource<WasiMessage> {
+        println!("[RUNTIME] Creating new message with {} bytes", data.len());
+        if data.len() > 0 && data.len() <= 64 {
+            println!("[RUNTIME] Message data (hex): {}",
+                data.iter().map(|b| format!("{:02x}", b)).collect::<Vec<_>>().join(" "));
+        }
         let id = self
             .resource_table
             .push(WasiMessage {
@@ -209,11 +222,19 @@ fn main() -> Result<()> {
     let log_dir = std::env::temp_dir().join("ros_logs");
     fs::create_dir_all(&log_dir)?;
 
+    // Get log level from environment variable, default to INFO
+    let log_level = std::env::var("RCUTILS_CONSOLE_SEVERITY_THRESHOLD")
+        .unwrap_or_else(|_| "INFO".to_string());
+
+    println!("[RUNTIME] Setting component log level to: {}", log_level);
+
     let wasi = WasiCtx::builder()
         .inherit_stdio()
         .inherit_args()
         .env("ROS_LOG_DIR", "/tmp/ros_logs")
         .env("ROS_HOME", "/tmp/ros_home")
+        .env("RCUTILS_CONSOLE_SEVERITY_THRESHOLD", &log_level)
+        .env("RCUTILS_CONSOLE_OUTPUT_FORMAT", "[{severity}] [{name}]: {message}")
         .preopened_dir(
             log_dir,
             "/tmp/ros_logs",

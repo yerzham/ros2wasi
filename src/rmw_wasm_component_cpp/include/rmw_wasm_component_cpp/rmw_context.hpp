@@ -21,6 +21,8 @@ public:
     std::unique_ptr<rmw_node_data_t> get_node_data(const rmw_node_t * const node);
     bool delete_node_data(const rmw_node_t * const node);
     const rmw_guard_condition_t * get_graph_guard_condition();
+    wasi::messaging::types::Client& get_client() { return client_; }
+    const wasi::messaging::types::Client& get_client() const { return client_; }
 private:
     bool is_shutdown_{ false };
     std::unordered_map<const rmw_node_t *, std::unique_ptr<rmw_node_data_t>> nodes_;

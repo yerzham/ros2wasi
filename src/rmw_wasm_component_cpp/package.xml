@@ -15,9 +15,10 @@
   <depend>rcpputils</depend>
   <depend>rosidl_runtime_c</depend>
   <depend>rosidl_runtime_cpp</depend>
-  <depend>rosidl_typesupport_introspection_c</depend>
-  <depend>rosidl_typesupport_introspection_cpp</depend>
   <depend>ros2_wit</depend>
+  <depend>fastcdr</depend>
+  <depend>rosidl_typesupport_fastrtps_c</depend>
+  <depend>rosidl_typesupport_fastrtps_cpp</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

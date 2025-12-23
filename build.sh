@@ -17,6 +17,10 @@ CMAKE_SHARED_LINKER_FLAGS="${WASI_SYSROOT}/libc++abi.a ${WASI_SYSROOT}/libunwind
 unset ROS_PYTHON_VERSION
 unset AMENT_PREFIX_PATH
 unset CMAKE_PREFIX_PATH
+
+# Select single typesupport for static linking (avoids "Multiple typesupports" error)
+export STATIC_ROSIDL_TYPESUPPORT_C=rosidl_typesupport_fastrtps_c
+export STATIC_ROSIDL_TYPESUPPORT_CPP=rosidl_typesupport_fastrtps_cpp
 # Set only /ros2_ws/install - completely exclude /opt/ros/kilted from CMake
 export AMENT_PREFIX_PATH=/ros2_ws/install
 export CMAKE_PREFIX_PATH=/ros2_ws/install

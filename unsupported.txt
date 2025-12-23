@@ -14,9 +14,6 @@ ros2/ament_cmake_ros/rmw_test_fixture_implementation
 ros2/rosidl_python
 ros2/rosidl/rosidl_generator_py
 ros2/rosidl/rosidl_typesupport_introspection_tests
-ros2/rosidl_typesupport_fastrtps/rosidl_typesupport_fastrtps_c
-ros2/rosidl_typesupport_fastrtps/rosidl_typesupport_fastrtps_cpp
-ros2/rosidl_typesupport_fastrtps/fastrtps_cmake_module
 ignition
 ros-planning/navigation_msgs
 ros-visualization
@@ -30,4 +27,6 @@ ros2/console_bridge_vendor
 ros2/ros_testing
 ros/ros_tutorials
 ros-perception
-eProsima
+eProsima/Fast-DDS
+eProsima/foonathan_memory_vendor
+
