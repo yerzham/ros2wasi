@@ -1,0 +1,5 @@
+package ros2:rmw@0.1.0;
+
+world rmw {
+    include wasi:messaging/messaging-core@0.2.0-draft;
+}

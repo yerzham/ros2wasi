@@ -65,10 +65,10 @@ rmw_init_options_copy(const rmw_init_options_t * src, rmw_init_options_t * dst)
     src->implementation_identifier,
     rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
-  RMW_CHECK_FOR_NULL_WITH_MSG(
-    dst->implementation_identifier,
-    "expected zero-initialized dst",
-    return RMW_RET_INVALID_ARGUMENT);
+  if (nullptr != dst->implementation_identifier) {
+    RMW_SET_ERROR_MSG("expected zero-initialized dst");
+    return RMW_RET_INVALID_ARGUMENT;
+  }
   rcutils_allocator_t allocator = src->allocator;
   RCUTILS_CHECK_ALLOCATOR(&allocator, return RMW_RET_INVALID_ARGUMENT);
 
@@ -152,18 +152,13 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
     options->implementation_identifier,
     "expected initialized options",
     return RMW_RET_INVALID_ARGUMENT);
-  RMW_CHECK_FOR_NULL_WITH_MSG(
-    context->implementation_identifier,
-    "expected initialized context",
-    return RMW_RET_INVALID_ARGUMENT);
+  if (nullptr != context->implementation_identifier) {
+    RMW_SET_ERROR_MSG("expected zero-initialized context");
+    return RMW_RET_INVALID_ARGUMENT;
+  }
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     options,
     options->implementation_identifier,
-    rmw_wasm_component_cpp::identifier,
-    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
-  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
-    context,
-    context->implementation_identifier,
     rmw_wasm_component_cpp::identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_FOR_NULL_WITH_MSG(

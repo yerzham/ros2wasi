@@ -1,66 +1,156 @@
 diff --git a/rclcpp/CMakeLists.txt b/rclcpp/CMakeLists.txt
-index 1234567..abcdefg 100644
+index 8712b488..123247d6 100644
 --- a/rclcpp/CMakeLists.txt
 +++ b/rclcpp/CMakeLists.txt
 @@ -267,6 +267,8 @@ ament_export_libraries(${PROJECT_NAME})
  ament_export_targets(${PROJECT_NAME})
-
+ 
  ament_export_dependencies(
 +  # Export ament_index_cpp so downstream packages can find it (linked as PRIVATE but needed for exports)
 +  ament_index_cpp
    builtin_interfaces
    libstatistics_collector
    rcl
+diff --git a/rclcpp/src/rclcpp/executors/multi_threaded_executor.cpp b/rclcpp/src/rclcpp/executors/multi_threaded_executor.cpp
+index 378fdfb8..d6bdac74 100644
+--- a/rclcpp/src/rclcpp/executors/multi_threaded_executor.cpp
++++ b/rclcpp/src/rclcpp/executors/multi_threaded_executor.cpp
+@@ -56,6 +56,7 @@ MultiThreadedExecutor::spin()
+     throw std::runtime_error("spin() called while already spinning");
+   }
+   RCPPUTILS_SCOPE_EXIT(wait_result_.reset();this->spinning.store(false););
++#ifndef __wasi__
+   std::vector<std::thread> threads;
+   size_t thread_id = 0;
+   {
+@@ -65,11 +66,16 @@ MultiThreadedExecutor::spin()
+       threads.emplace_back(func);
+     }
+   }
++#else
++  size_t thread_id = 0;
++#endif
+ 
+   run(thread_id);
++#ifndef __wasi__
+   for (auto & thread : threads) {
+     thread.join();
+   }
++#endif
+ }
+ 
+ size_t
+diff --git a/rclcpp/src/rclcpp/experimental/timers_manager.cpp b/rclcpp/src/rclcpp/experimental/timers_manager.cpp
+index 2caa0a6b..19ae157a 100644
+--- a/rclcpp/src/rclcpp/experimental/timers_manager.cpp
++++ b/rclcpp/src/rclcpp/experimental/timers_manager.cpp
+@@ -78,7 +78,9 @@ void TimersManager::start()
+     throw std::runtime_error("TimersManager::start() can't start timers thread as already running");
+   }
+ 
++#ifndef __wasi__
+   timers_thread_ = std::thread(&TimersManager::run_timers, this);
++#endif
+ }
+ 
+ void TimersManager::stop()
+@@ -95,9 +97,11 @@ void TimersManager::stop()
+   timers_cv_.notify_one();
+ 
+   // Join timers thread if it's running
++#ifndef __wasi__
+   if (timers_thread_.joinable()) {
+     timers_thread_.join();
+   }
++#endif
+ }
+ 
+ std::optional<std::chrono::nanoseconds> TimersManager::get_head_timeout()
+diff --git a/rclcpp/src/rclcpp/graph_listener.cpp b/rclcpp/src/rclcpp/graph_listener.cpp
+index d7ea4211..a963be85 100644
+--- a/rclcpp/src/rclcpp/graph_listener.cpp
++++ b/rclcpp/src/rclcpp/graph_listener.cpp
+@@ -92,7 +92,9 @@ GraphListener::start_if_not_started()
+     // Initialize the wait set before starting.
+     init_wait_set();
+     // Start the listener thread.
++#ifndef __wasi__
+     listener_thread_ = std::thread(&GraphListener::run, this);
++#endif
+     is_started_ = true;
+   }
+ }
+@@ -334,7 +336,9 @@ GraphListener::__shutdown()
+   if (!is_shutdown_.exchange(true)) {
+     if (is_started_) {
+       interrupt_(&interrupt_guard_condition_);
++#ifndef __wasi__
+       listener_thread_.join();
++#endif
+     }
+     if (is_started_) {
+       cleanup_wait_set();
 diff --git a/rclcpp/src/rclcpp/signal_handler.cpp b/rclcpp/src/rclcpp/signal_handler.cpp
-index cf26d06d..0590c47c 100644
+index c0c6b70f..4c72ada6 100644
 --- a/rclcpp/src/rclcpp/signal_handler.cpp
 +++ b/rclcpp/src/rclcpp/signal_handler.cpp
-@@ -25,6 +25,8 @@
- #include <windows.h>
- #elif defined(__APPLE__)
- #include <dispatch/dispatch.h>
-+#elif defined(__wasi__)
-+#include <condition_variable>
- #else  // posix
- #include <semaphore.h>
- #endif
-@@ -298,6 +300,9 @@ SignalHandler::setup_wait_for_signal()
+@@ -154,7 +154,9 @@ SignalHandler::install(SignalHandlerOptions signal_handler_options)
+       old_sigterm_handler_ = set_signal_handler(SIGTERM, handler_argument);
+     }
+ 
++#ifndef __wasi__
+     signal_handler_thread_ = std::thread(&SignalHandler::deferred_signal_handler, this);
++#endif
+   } catch (...) {
+     installed_.store(false);
+     throw;
+@@ -189,9 +191,11 @@ SignalHandler::uninstall()
+     signal_handlers_options_ = SignalHandlerOptions::None;
+     RCLCPP_DEBUG(get_logger(), "SignalHandler::uninstall(): notifying deferred signal handler");
+     notify_signal_handler();
++#ifndef __wasi__
+     if (signal_handler_thread_.joinable()) {
+       signal_handler_thread_.join();
+     }
++#endif
+     teardown_wait_for_signal();
+   } catch (...) {
+     installed_.exchange(true);
+@@ -294,6 +298,9 @@ SignalHandler::setup_wait_for_signal()
    }
  #elif defined(__APPLE__)
    signal_handler_sem_ = dispatch_semaphore_create(0);
 +#elif defined(__wasi__)
-+  // WASI: use condition variable, no additional setup needed
++  // For WASI, condition variable is already initialized, just reset the flag
 +  signal_notified_ = false;
  #else  // posix
    if (-1 == sem_init(&signal_handler_sem_, 0, 0)) {
      throw std::runtime_error(std::string("sem_init() failed: ") + strerror(errno));
-@@ -316,6 +321,8 @@ SignalHandler::teardown_wait_for_signal() noexcept
+@@ -312,6 +319,8 @@ SignalHandler::teardown_wait_for_signal() noexcept
    CloseHandle(signal_handler_sem_);
  #elif defined(__APPLE__)
    dispatch_release(signal_handler_sem_);
 +#elif defined(__wasi__)
-+  // WASI: no teardown needed for condition variable
++  // For WASI, condition variable cleanup is automatic, nothing to do
  #else  // posix
    if (-1 == sem_destroy(&signal_handler_sem_)) {
      RCLCPP_ERROR(get_logger(), "invalid semaphore in teardown_wait_for_signal()");
-@@ -355,6 +362,11 @@ SignalHandler::wait_for_signal()
+@@ -351,6 +360,10 @@ SignalHandler::wait_for_signal()
    }
  #elif defined(__APPLE__)
    dispatch_semaphore_wait(signal_handler_sem_, DISPATCH_TIME_FOREVER);
 +#elif defined(__wasi__)
-+  // WASI: use condition variable
 +  std::unique_lock<std::mutex> lock(signal_handler_mutex_);
-+  signal_handler_cv_.wait(lock, [this] { return signal_notified_; });
++  signal_handler_cv_.wait(lock, [this]() { return signal_notified_; });
 +  signal_notified_ = false;
  #else  // posix
    int s;
    do {
-@@ -376,6 +388,13 @@ SignalHandler::notify_signal_handler() noexcept
+@@ -372,6 +385,12 @@ SignalHandler::notify_signal_handler() noexcept
    }
  #elif defined(__APPLE__)
    dispatch_semaphore_signal(signal_handler_sem_);
 +#elif defined(__wasi__)
-+  // WASI: use condition variable
 +  {
 +    std::lock_guard<std::mutex> lock(signal_handler_mutex_);
 +    signal_notified_ = true;
@@ -70,18 +160,88 @@ index cf26d06d..0590c47c 100644
    if (-1 == sem_post(&signal_handler_sem_)) {
      RCLCPP_ERROR(get_logger(), "sem_post failed in notify_signal_handler()");
 diff --git a/rclcpp/src/rclcpp/signal_handler.hpp b/rclcpp/src/rclcpp/signal_handler.hpp
-index db608b0d..99cbbdfd 100644
+index db608b0d..e9318377 100644
 --- a/rclcpp/src/rclcpp/signal_handler.hpp
 +++ b/rclcpp/src/rclcpp/signal_handler.hpp
-@@ -204,6 +204,11 @@ private:
+@@ -28,6 +28,8 @@
+ #include <windows.h>
+ #elif defined(__APPLE__)
+ #include <dispatch/dispatch.h>
++#elif defined(__wasi__)
++#include <condition_variable>
+ #else  // posix
+ #include <semaphore.h>
+ #endif
+@@ -204,6 +206,10 @@ private:
    HANDLE signal_handler_sem_;
  #elif defined(__APPLE__)
    dispatch_semaphore_t signal_handler_sem_;
 +#elif defined(__wasi__)
-+  // WASI doesn't support POSIX semaphores, use condition variable instead
-+  std::mutex signal_handler_mutex_;
 +  std::condition_variable signal_handler_cv_;
++  std::mutex signal_handler_mutex_;
 +  bool signal_notified_ = false;
  #else  // posix
    sem_t signal_handler_sem_;
  #endif
+diff --git a/rclcpp/src/rclcpp/time_source.cpp b/rclcpp/src/rclcpp/time_source.cpp
+index 8c0126dc..dff95147 100644
+--- a/rclcpp/src/rclcpp/time_source.cpp
++++ b/rclcpp/src/rclcpp/time_source.cpp
+@@ -388,6 +388,7 @@ private:
+       exec_options.context = node_base_->get_context();
+       clock_executor_ =
+         std::make_shared<rclcpp::executors::SingleThreadedExecutor>(exec_options);
++#ifndef __wasi__
+       if (!clock_executor_thread_.joinable()) {
+         clock_executor_thread_ = std::thread(
+           [this]() {
+@@ -396,6 +397,7 @@ private:
+           }
+         );
+       }
++#endif
+     }
+ 
+     clock_subscription_ = rclcpp::create_subscription<rosgraph_msgs::msg::Clock>(
+@@ -423,11 +425,13 @@ private:
+   void destroy_clock_sub()
+   {
+     std::lock_guard<std::mutex> guard(clock_sub_lock_);
++#ifndef __wasi__
+     if (clock_executor_thread_.joinable()) {
+       clock_executor_->cancel();
+       clock_executor_thread_.join();
+       clock_executor_->remove_callback_group(clock_callback_group_);
+     }
++#endif
+     clock_subscription_.reset();
+   }
+ 
+diff --git a/rclcpp_components/include/rclcpp_components/component_manager_isolated.hpp b/rclcpp_components/include/rclcpp_components/component_manager_isolated.hpp
+index e2061e4d..7b54ac15 100644
+--- a/rclcpp_components/include/rclcpp_components/component_manager_isolated.hpp
++++ b/rclcpp_components/include/rclcpp_components/component_manager_isolated.hpp
+@@ -77,11 +77,13 @@ protected:
+     DedicatedExecutorWrapper & wrapper = result.first->second;
+     wrapper.executor = exec;
+     auto & thread_initialized = wrapper.thread_initialized;
++#ifndef __wasi__
+     wrapper.thread = std::thread(
+       [exec, &thread_initialized]() {
+         thread_initialized = true;
+         exec->spin();
+       });
++#endif
+   }
+   /// Remove component node from executor model, it's invoked in on_unload_node()
+   /**
+@@ -125,7 +127,9 @@ private:
+     // the call to cancel() will work.
+     executor_wrapper.executor->cancel();
+     // Wait for the thread task to return
++#ifndef __wasi__
+     executor_wrapper.thread.join();
++#endif
+   }
+ 
+   std::unordered_map<uint64_t, DedicatedExecutorWrapper> dedicated_executor_wrappers_;

@@ -1,13 +1,28 @@
 diff --git a/rcl_logging_spdlog/CMakeLists.txt b/rcl_logging_spdlog/CMakeLists.txt
-index 1234567..abcdefg 100644
+index b3c384a..1b76556 100644
 --- a/rcl_logging_spdlog/CMakeLists.txt
 +++ b/rcl_logging_spdlog/CMakeLists.txt
 @@ -68,7 +68,7 @@ if(BUILD_TESTING)
    endif()
  endif()
-
+ 
 -ament_export_dependencies(rcl_logging_interface)
 +ament_export_dependencies(rcl_logging_interface spdlog_vendor spdlog)
  ament_export_libraries(${PROJECT_NAME})
  ament_export_targets(${PROJECT_NAME})
  ament_package()
+diff --git a/rcl_logging_spdlog/src/rcl_logging_spdlog.cpp b/rcl_logging_spdlog/src/rcl_logging_spdlog.cpp
+index 2bee79c..04abf2d 100644
+--- a/rcl_logging_spdlog/src/rcl_logging_spdlog.cpp
++++ b/rcl_logging_spdlog/src/rcl_logging_spdlog.cpp
+@@ -199,7 +199,10 @@ rcl_logging_ret_t rcl_logging_external_initialize(
+       // in this case we should do the new thing (until config files are supported)
+       // which is to configure the logger to flush periodically and on
+       // error level messages
++#ifndef __wasi__
++      // WASI: flush_every() creates a background thread which is not supported
+       spdlog::flush_every(std::chrono::seconds(5));
++#endif
+       g_root_logger->flush_on(spdlog::level::err);
+     } else {
+       // the old behavior is to not configure the sink at all, so do nothing

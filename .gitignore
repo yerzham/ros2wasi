@@ -7,3 +7,7 @@ build
 install
 log
 .cache/
+src-backup/
+*backup/
+target/
+*.wasm

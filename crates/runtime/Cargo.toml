@@ -1,0 +1,9 @@
+[package]
+name = "runtime"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.100"
+wasmtime = "39.0.1"
+wasmtime-wasi = "39.0.1"
